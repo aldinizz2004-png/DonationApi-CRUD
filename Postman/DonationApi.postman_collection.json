@@ -1,0 +1,640 @@
+{
+  "info": {
+    "_postman_id": "4132eb1f-f158-4197-af9f-b90764c32769",
+    "name": "Donation API",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "59190622",
+    "_collection_link": "https://go.postman.co/collection/59190622-4132eb1f-f158-4197-af9f-b90764c32769?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Validation & Errors",
+      "item": [
+        {
+          "name": "Create - Negative Amount",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));\r\npm.test(\"Amount error returned\", () => pm.expect(pm.response.json().errors).to.have.property(\"Amount\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"amount\": -10, \"donorName\": \"Test User\", \"isAnonymous\": false }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/donations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create - Zero Amount",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));\r\npm.test(\"Amount error returned\", () => pm.expect(pm.response.json().errors).to.have.property(\"Amount\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"amount\": 0, \"donorName\": \"Test User\", \"isAnonymous\": false }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/donations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create - Missing Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));\r\npm.test(\"Amount is required\", () => pm.expect(pm.response.json().errors).to.have.property(\"Amount\"));\r\npm.test(\"IsAnonymous is required\", () => pm.expect(pm.response.json().errors).to.have.property(\"IsAnonymous\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"donorName\": \"Test User\" }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/donations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get - Non-numeric Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/donations/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donations",
+                "abc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get - Non-existent Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));\r\npm.test(\"Not found message\", () => pm.expect(pm.response.json().title).to.eql(\"Donation not found\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/donations/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donations",
+                "999999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update - Non-existent Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));\r\npm.test(\"Not found message\", () => pm.expect(pm.response.json().title).to.eql(\"Donation not found\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"amount\": 10, \"donorName\": \"Test User\", \"isAnonymous\": false }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/donations/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donations",
+                "999999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete - Non-existent Id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status is 404\", () => pm.response.to.have.status(404));\r\npm.test(\"Not found message\", () => pm.expect(pm.response.json().title).to.eql(\"Donation not found\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/donations/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "donations",
+                "999999"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\npm.test(\"API is Healthy\", () => pm.expect(pm.response.json().status).to.eql(\"Healthy\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "health"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Create Normal Donation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));\r\npm.test(\"Donor name is visible\", () => pm.expect(pm.response.json().donorName).to.eql(\"Ahmad Khalil\"));\r\npm.test(\"Location header exists\", () => pm.response.to.have.header(\"Location\"));\r\npm.collectionVariables.set(\"normalId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"amount\": 50,\r\n  \"donorName\": \"Ahmad Khalil\",\r\n  \"isAnonymous\": false\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/donations",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "donations"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Anonymous Donation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 201\", () => pm.response.to.have.status(201));\r\npm.test(\"Donor name is masked\", () => pm.expect(pm.response.json().donorName).to.eql(\"Anonymous\"));\r\npm.test(\"Real name is NOT in the response\", () => pm.expect(pm.response.text()).to.not.include(\"Secret Donor\"));\r\npm.collectionVariables.set(\"anonId\", pm.response.json().id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"amount\": 120.5,\r\n  \"donorName\": \"Secret Donor\",\r\n  \"isAnonymous\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/donations",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "donations"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Donations",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\npm.test(\"Response is an array\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));\npm.test(\"Anonymous donation is masked in the list\", () => {\n    const anon = pm.response.json().find(d => d.id === Number(pm.collectionVariables.get(\"anonId\")));\n    pm.expect(anon.donorName).to.eql(\"Anonymous\");\n});\npm.test(\"Real anonymous name is NOT in the list\", () => pm.expect(pm.response.text()).to.not.include(\"Secret Donor\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/donations",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "donations"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Normal Donation By Id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\npm.test(\"Correct donation returned\", () => pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get(\"normalId\"))));\npm.test(\"Donor name is visible\", () => pm.expect(pm.response.json().donorName).to.eql(\"Ahmad Khalil\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/donations/{{normalId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "donations",
+            "{{normalId}}"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Get Anonymous Donation By Id",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\npm.test(\"Donor name is masked\", () => pm.expect(pm.response.json().donorName).to.eql(\"Anonymous\"));\npm.test(\"Real name is NOT in the response\", () => pm.expect(pm.response.text()).to.not.include(\"Secret Donor\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/donations/{{anonId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "donations",
+            "{{anonId}}"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Update Normal Donation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\r\npm.test(\"Amount was updated\", () => pm.expect(pm.response.json().amount).to.eql(75));\r\npm.test(\"Donor name is still visible\", () => pm.expect(pm.response.json().donorName).to.eql(\"Ahmad Khalil\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"amount\": 75,\r\n  \"donorName\": \"Ahmad Khalil\",\r\n  \"isAnonymous\": false\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/donations/{{normalId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "donations",
+            "{{normalId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Anonymous Donation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", () => pm.response.to.have.status(200));\r\npm.test(\"Amount was updated\", () => pm.expect(pm.response.json().amount).to.eql(200));\r\npm.test(\"Donor name is still masked\", () => pm.expect(pm.response.json().donorName).to.eql(\"Anonymous\"));\r\npm.test(\"New real name is NOT in the response\", () => pm.expect(pm.response.text()).to.not.include(\"Hidden Person\"));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"amount\": 200,\r\n  \"donorName\": \"Hidden Person\",\r\n  \"isAnonymous\": true\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/donations/{{anonId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "donations",
+            "{{anonId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Normal Donation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/donations/{{normalId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "donations",
+            "{{normalId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Deleted Donation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Deleted donation is gone (404)\", () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/donations/{{normalId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "donations",
+            "{{normalId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Anonymous Donation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 204\", () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/donations/{{anonId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "donations",
+            "{{anonId}}"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5207"
+    },
+    {
+      "key": "normalId",
+      "value": ""
+    },
+    {
+      "key": "anonId",
+      "value": ""
+    }
+  ]
+}
