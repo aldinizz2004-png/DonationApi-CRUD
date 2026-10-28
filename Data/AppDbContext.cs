@@ -35,7 +35,12 @@ public class AppDbContext : DbContext
                   .HasDefaultValueSql("SYSUTCDATETIME()")
                   .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
 
-            entity.HasIndex(d => d.CreatedAt);
+            // Keyset pagination index: matches ORDER BY CreatedAt DESC, Id DESC and the cursor seek.
+            // INCLUDE makes it covering, so a page is read from the index only (no key lookups).
+            entity.HasIndex(d => new { d.CreatedAt, d.Id })
+                  .IsDescending(true, true)
+                  .IncludeProperties(d => new { d.Amount, d.DonorName, d.IsAnonymous })
+                  .HasDatabaseName("IX_Donations_CreatedAt_Id");
         });
     }
 }

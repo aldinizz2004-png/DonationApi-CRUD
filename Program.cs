@@ -7,7 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 // ===================== Services =====================
 
 // Controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+        // enums as text in JSON and Swagger ("newest" / "oldest") instead of 0 / 1
+        o.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter(System.Text.Json.JsonNamingPolicy.CamelCase)));
 
 // Database (SQL Server)
 builder.Services.AddDbContext<AppDbContext>(options =>

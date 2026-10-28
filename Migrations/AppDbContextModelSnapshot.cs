@@ -51,7 +51,11 @@ namespace DonationApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedAt");
+                    b.HasIndex("CreatedAt", "Id")
+                        .IsDescending()
+                        .HasDatabaseName("IX_Donations_CreatedAt_Id");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("CreatedAt", "Id"), new[] { "Amount", "DonorName", "IsAnonymous" });
 
                     b.ToTable("Donations", null, t =>
                         {

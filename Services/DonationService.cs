@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using DonationApi.Data;
 using DonationApi.DTOs;
 using DonationApi.Models;
@@ -15,14 +16,74 @@ public class DonationService : IDonationService
         _db = db;
     }
 
-    public async Task<List<DonationResponse>> GetAllAsync()
+    /// <summary>
+    /// Keyset (cursor) pagination, newest or oldest first.
+    /// One index (CreatedAt DESC, Id DESC) serves the filter, the order and the cursor seek,
+    /// so every page costs the same, and new donations never cause duplicates between pages.
+    /// </summary>
+    public async Task<CursorPage<DonationResponse>> GetPageAsync(DonationPageQuery q, CancellationToken ct = default)
     {
-        var donations = await _db.Donations
-            .AsNoTracking()
-            .OrderByDescending(d => d.CreatedAt)
-            .ToListAsync();
+        IQueryable<Donation> query = _db.Donations.AsNoTracking();
 
-        return donations.Select(ToResponse).ToList();
+        // 1) Filters (before the cursor, so totalCount and the pages describe the same set)
+        if (q.From is { } from)
+        {
+            var fromUtc = DateUtc.ToUtc(from);
+            query = query.Where(d => d.CreatedAt >= fromUtc);
+        }
+        if (q.To is { } to)
+        {
+            var toUtc = DateUtc.ToUtc(to);
+            query = query.Where(d => d.CreatedAt <= toUtc);
+        }
+        if (q.MinAmount is { } minAmount)
+        {
+            query = query.Where(d => d.Amount >= minAmount);
+        }
+
+        // 2) Optional total (one COUNT with the same filters) - only when the client asks for it
+        int? totalCount = q.IncludeTotal ? await query.CountAsync(ct) : null;
+
+        // 3) Keyset: continue strictly after the last row the client saw.
+        //    Id is the tie-breaker when two donations have the same CreatedAt.
+        var newestFirst = q.Sort == DonationSort.Newest;
+
+        if (DonationCursor.TryDecode(q.Cursor, out var cursor))
+        {
+            var lastCreatedAt = cursor.CreatedAt;
+            var lastId = cursor.Id;
+
+            query = newestFirst
+                ? query.Where(d => d.CreatedAt < lastCreatedAt || (d.CreatedAt == lastCreatedAt && d.Id < lastId))
+                : query.Where(d => d.CreatedAt > lastCreatedAt || (d.CreatedAt == lastCreatedAt && d.Id > lastId));
+        }
+
+        // 4) Deterministic order: CreatedAt, then Id (unique) - same direction as the index
+        query = newestFirst
+            ? query.OrderByDescending(d => d.CreatedAt).ThenByDescending(d => d.Id)
+            : query.OrderBy(d => d.CreatedAt).ThenBy(d => d.Id);
+
+        // 5) Read one extra row to know if another page exists; project to the DTO in SQL
+        var items = await query
+            .Take(q.PageSize + 1)
+            .Select(ToResponseExpression)
+            .ToListAsync(ct);
+
+        var hasNextPage = items.Count > q.PageSize;
+        if (hasNextPage) items.RemoveAt(items.Count - 1);
+
+        var last = items.LastOrDefault();
+
+        return new CursorPage<DonationResponse>
+        {
+            Items = items,
+            PageSize = q.PageSize,
+            HasNextPage = hasNextPage,
+            NextCursor = hasNextPage && last is not null
+                ? DonationCursor.Encode(last.CreatedAt, last.Id, q.Sort)
+                : null,
+            TotalCount = totalCount
+        };
     }
 
     public async Task<DonationResponse?> GetByIdAsync(int id)
@@ -76,8 +137,9 @@ public class DonationService : IDonationService
     }
 
     // The ONLY place an entity becomes an API response.
-    // Every endpoint goes through here, so an anonymous name can never leak.
-    private static DonationResponse ToResponse(Donation d) => new()
+    // As an expression it runs inside SQL for the list (only the needed columns, masking done in the query);
+    // compiled, it maps single entities. Either way an anonymous name can never leak.
+    private static readonly Expression<Func<Donation, DonationResponse>> ToResponseExpression = d => new DonationResponse
     {
         Id = d.Id,
         Amount = d.Amount,
@@ -85,4 +147,6 @@ public class DonationService : IDonationService
         IsAnonymous = d.IsAnonymous,
         CreatedAt = d.CreatedAt
     };
+
+    private static readonly Func<Donation, DonationResponse> ToResponse = ToResponseExpression.Compile();
 }

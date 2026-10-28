@@ -16,12 +16,16 @@ public class DonationsController : ControllerBase
         _service = service;
     }
 
-    /// GET api/donations
+    /// GET api/donations?pageSize=20&sort=newest&from=2026-01-01&to=2026-12-31&minAmount=50&includeTotal=true
+    /// Next page: GET api/donations?pageSize=20&cursor={nextCursor}
     [HttpGet]
-    [ProducesResponseType(typeof(List<DonationResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<List<DonationResponse>>> GetAll()
+    [ProducesResponseType(typeof(CursorPage<DonationResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<CursorPage<DonationResponse>>> GetAll(
+        [FromQuery] DonationPageQuery query, CancellationToken ct)
     {
-        return Ok(await _service.GetAllAsync());
+        // Invalid pageSize / sort / cursor / date range -> 400 automatically ([ApiController])
+        return Ok(await _service.GetPageAsync(query, ct));
     }
 
     /// GET api/donations/5
