@@ -1,0 +1,24 @@
+# Build output (rebuilt inside the image)
+**/bin/
+**/obj/
+
+# Secrets and local settings - never copied into the image
+.env
+**/*.user
+
+# Git, IDE and tooling
+.git/
+.gitignore
+.vs/
+.vscode/
+.idea/
+
+# Not needed to build or run the API
+Postman/
+*.pdf
+*.md
+*.http
+Dockerfile
+.dockerignore
+compose.yaml
+.env.example

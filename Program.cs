@@ -37,6 +37,14 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+// ===================== Database migrations =====================
+// In Docker the database starts empty, so the API creates/updates the schema on startup.
+// Enabled by Database__MigrateOnStartup=true (set in compose.yaml); off for normal local runs.
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+{
+    await MigrateDatabaseAsync(app);
+}
+
 // ===================== Pipeline =====================
 
 // Any unhandled exception -> 500 ProblemDetails (no stack trace leaked to the client)
@@ -54,3 +62,28 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+// Retries because SQL Server may still be starting when the API container starts.
+static async Task MigrateDatabaseAsync(WebApplication app)
+{
+    const int maxAttempts = 10;
+    var logger = app.Logger;
+
+    for (var attempt = 1; ; attempt++)
+    {
+        try
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.MigrateAsync();
+            logger.LogInformation("Database migrations applied.");
+            return;
+        }
+        catch (Exception ex) when (attempt < maxAttempts)
+        {
+            logger.LogWarning("Database not ready (attempt {Attempt}/{Max}): {Message}. Retrying in 5 s...",
+                attempt, maxAttempts, ex.Message);
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+    }
+}

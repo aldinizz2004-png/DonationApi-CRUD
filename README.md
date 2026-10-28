@@ -6,7 +6,7 @@ A RESTful API to create and manage donations. **If a donation is anonymous, the 
 
 **Results:** 6 endpoints · **keyset (cursor) pagination** on the list · 27 Postman requests · **67 / 67 tests passed**
 
-Documents: `DonationApi_Task5_Presentation.pdf` (CRUD walkthrough) · `Pagination_Report.pdf` (pagination research and decision)
+Documents: `DonationApi_Task5_Presentation.pdf` (CRUD walkthrough) · `Pagination_Research_Report.pdf` (pagination research and decision)
 
 ---
 
@@ -148,7 +148,7 @@ WHERE [d].[CreatedAt] < @lastCreatedAt OR ([d].[CreatedAt] = @lastCreatedAt AND 
 ORDER BY [d].[CreatedAt] DESC, [d].[Id] DESC
 ```
 
-**Why keyset and not `Skip/Take`:** measured on 1,000,000 rows, the last page took 567.6 ms with OFFSET (it reads and discards ~1M index rows) and 0.2 ms with keyset (an index seek reads 20 rows). When 3 donations were inserted between page 1 and page 2, OFFSET returned 3 duplicates and keyset returned 0. Details in `Pagination_Report.pdf`.
+**Why keyset and not `Skip/Take`:** measured on 1,000,000 rows, the last page took 567.6 ms with OFFSET (it reads and discards ~1M index rows) and 0.2 ms with keyset (an index seek reads 20 rows). When 3 donations were inserted between page 1 and page 2, OFFSET returned 3 duplicates and keyset returned 0. Details in `Pagination_Research_Report.pdf`.
 
 **How it is built:**
 - `Take(pageSize + 1)`: the extra row tells us if a next page exists, without a `COUNT`.
